@@ -97,21 +97,21 @@ fn main() {
         match pong.mtype {
             ReplyType::Reply => {
                 print!("{} bytes from {} ({}): ",
-                    pong.size, pong.hostname.or(Some(pong.address.to_string())).unwrap(), pong.address);
+                    pong.size, pong.hostname.or(Some(pong.address.to_string())).unwrap().yellow(), pong.address);
                 
-                print!("icmp_seq={} ", pong.sequence);
+                print!("icmp_seq={} ", pong.sequence.to_string().bold());
         
                 // Turns out it's really difficult to get the hop_limit from ipv6 packets because
                 // the raw socket for ipv6 connections doesn't include the ipv6 header when it puts
                 // the message into the buffer. (But it does put the ipv4 header in when the connection is ipv4)
                 // Making this work would involve adding features to the socket2 crate to be able to use `recvmsg`
                 if let Some(ttl) = pong.ttl {
-                    print!("ttl={} ", ttl);
+                    print!("ttl={} ", ttl.to_string().bold());
                 }
 
-                print!("time={:.2}ms ", pong.rtt.as_micros() as f32 / 1000f32);
+                print!("time={}ms ", format!("{:.2}", pong.rtt.as_micros() as f32 / 1000f32).bold());
 
-                print!("loss={:.2}%", 100f32 * (lost_count as f32) / (sent_count as f32));
+                print!("loss={}%", format!("{:.2}", 100f32 * (lost_count as f32) / (sent_count as f32)).bold());
 
                 println!(""); // Finish the line
             }
