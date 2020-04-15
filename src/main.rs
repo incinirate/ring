@@ -26,8 +26,12 @@ fn main() {
             .required(true)
             .index(1))
         .arg(Arg::with_name("timeout")
-            .help("Set how long to wait for each pong before timing out (Default 1s)")
+            .help("Set how long to wait for each pong before timing out (Default 5s)")
             .short("W")
+            .takes_value(true))
+        .arg(Arg::with_name("interval")
+            .help("Set how long to wait in between ping (Default 1s)")
+            .short("I")
             .takes_value(true))
         .arg(Arg::with_name("ttl")
             .help("Set ttl on outgoing packets")
@@ -40,6 +44,9 @@ fn main() {
 
     let timeout = matches.value_of("timeout").unwrap_or("5s");
     let timeout = humantime::parse_duration(timeout).expect("Invalid duration for timeout (ex: 1s, 400ms, 1m) : ");
+
+    let interval = matches.value_of("interval").unwrap_or("1s");
+    let interval = humantime::parse_duration(interval).expect("Invalid duration for interval (ex: 1s, 400ms, 1m) : ");
 
     let ttl = matches.value_of("ttl").map(|ttl| ttl.parse::<u32>().expect("Invalid ttl: (ex: 64) : "));
 
@@ -65,7 +72,7 @@ fn main() {
             Ok(n) => n,
             Err(e) => {
                 eprintln!("Error sending ping: {}", e);
-                thread::sleep(Duration::new(1, 0));
+                thread::sleep(interval);
                 continue;
             }
         };
@@ -83,13 +90,13 @@ fn main() {
                             lost_count.to_string().red().bold(), sent_count.to_string().bold(), 
                             format!("{:.2}", 100f32 * (lost_count as f32) / (sent_count as f32)).bold());
                         
-                        thread::sleep(Duration::new(1, 0));
+                        thread::sleep(interval);
                         continue;
                     }
                 }
 
                 eprintln!("Error receiving pong: {}", e);
-                thread::sleep(Duration::new(1, 0));
+                thread::sleep(interval);
                 continue;
             }
         };
@@ -125,7 +132,7 @@ fn main() {
             }
         }
 
-        thread::sleep(Duration::new(1, 0));
+        thread::sleep(interval);
     }
 
     println!(""); // New line
