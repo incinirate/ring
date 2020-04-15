@@ -6,7 +6,6 @@ use colored::*;
 
 use clap::{App, AppSettings, Arg};
 
-use std::time::Duration;
 use std::thread;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
