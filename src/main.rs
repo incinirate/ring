@@ -48,7 +48,7 @@ fn main() {
         pinger.set_ttl(t).expect("Error setting ttl : ");
     }
 
-    println!("{} {} ({}) {}({}) {}", "PING".cyan(), destination_host.bold(), destination, 56.to_string().bold(), 84, "bytes of data.".cyan());
+    println!("{} {} ({})", "PING".cyan(), destination_host.bold(), destination);
 
     let running = Arc::new(AtomicBool::new(true));
     let r = running.clone();
