@@ -73,7 +73,7 @@ impl Pinger {
 
     // Sends out a ping, returns the icmp_seq (sequence num) used
     pub fn ping(&mut self) -> Result<u16> {
-        self.sequence += 1; // Each new ping updates the sequence
+        self.sequence = self.sequence.wrapping_add(1); // Each new ping updates the sequence
         let pack = packet::ICMPEchoPacket {
             message_type: if self.address.is_ipv6() { ECHO_REQUEST_V6 } else { ECHO_REQUEST_V4 },
             message_code: 0,
@@ -139,13 +139,17 @@ impl Pinger {
             // Make sure that this is the right type of packet
             let mtype: ReplyType;
             if self.address.is_ipv6() {
-                if icmp_packet.message_type == ECHO_REPLY_V6 { mtype = ReplyType::Reply }
-                else if icmp_packet.message_type == TIMEOUT_V6 { mtype = ReplyType::TimeLimitExceeded }
-                else { continue };
+                match icmp_packet.message_type {
+                    ECHO_REPLY_V6 => { mtype = ReplyType::Reply }
+                    TIMEOUT_V6    => { mtype = ReplyType::TimeLimitExceeded }
+                    _ => continue
+                }
             } else {
-                if icmp_packet.message_type == ECHO_REPLY_V4 { mtype = ReplyType::Reply }
-                else if icmp_packet.message_type == TIMEOUT_V4 { mtype = ReplyType::TimeLimitExceeded }
-                else { continue };
+                match icmp_packet.message_type {
+                    ECHO_REPLY_V4 => { mtype = ReplyType::Reply }
+                    TIMEOUT_V4    => { mtype = ReplyType::TimeLimitExceeded }
+                    _ => continue
+                }
             }
 
             if mtype == ReplyType::Reply {
